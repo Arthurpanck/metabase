@@ -25,9 +25,10 @@ jobs:
           java-version: "21"
 
       - name: Setup Clojure CLI
-        uses: DeLaGuardo/setup-clojure@13.0
-        with:
-          cli: "1.12.3"
+        run: |
+          curl -L -O https://github.com/clojure/brew-install/releases/download/1.12.3.2/linux-install.sh
+          chmod +x linux-install.sh
+          sudo ./linux-install.sh
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
