@@ -1,0 +1,67 @@
+<!doctype html><html lang="en" translate="no"><head><meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="robots" content="noindex"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><link rel="apple-touch-icon" sizes="180x180" href="app/assets/img/apple-touch-icon.png"><link rel="icon" href="https://Arthurpanck.github.io/metabase/app/assets/img/favicon.ico"/><link rel="manifest" crossorigin="use-credentials" href="app/assets/img/site.webmanifest"><meta name="msapplication-TileColor" content="#2d89ef"><meta name="msapplication-config" content="app/assets/img/browserconfig.xml"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-status-bar-style" content="default"/><meta name="base-href" content="/metabase/"/><meta name="uri" content="/"/><title>Query Builder Demo</title><base href="/metabase/"/><script type="application/json" id="_metabaseBootstrap">{"site-url":"https://Arthurpanck.github.io/metabase"}</script><script type="application/json" id="_metabaseUserLocalization">{}</script><script type="application/json" id="_metabaseSiteLocalization">{}</script><script type="application/json" id="_metabaseUserColorScheme">"light"</script><script type="application/json" id="_metabaseNonce">null</script><script>(function() {
+  window.MetabaseBootstrap        = JSON.parse(document.getElementById("_metabaseBootstrap").textContent);
+  window.MetabaseUserLocalization = JSON.parse(document.getElementById("_metabaseUserLocalization").textContent);
+  window.MetabaseSiteLocalization = JSON.parse(document.getElementById("_metabaseSiteLocalization").textContent);
+  window.MetabaseUserColorScheme = JSON.parse(document.getElementById("_metabaseUserColorScheme").textContent);
+  window.MetabaseNonce            = JSON.parse(document.getElementById("_metabaseNonce").textContent);
+
+  var configuredRoot = document.head.querySelector("meta[name='base-href']").content;
+  var actualRoot = "/";
+
+  // Add trailing slashes
+  var backendPathname = document.head.querySelector("meta[name='uri']").content.replace(/\/*$/, "/");
+  // e.x. "/questions/"
+  var frontendPathname = window.location.pathname.replace(/\/*$/, "/");
+  // e.x. "/metabase/questions/"
+  if (backendPathname === frontendPathname.slice(-backendPathname.length)) {
+    // Remove the backend pathname from the end of the frontend pathname
+    actualRoot = frontendPathname.slice(0, -backendPathname.length) + "/";
+    // e.x. "/metabase/"
+  }
+
+  if (actualRoot !== configuredRoot) {
+    console.warn("Warning: the Metabase site URL basename \"" + configuredRoot + "\" does not match the actual basename \"" + actualRoot + "\".");
+    console.warn("You probably want to update the Site URL setting to \"" + window.location.origin + actualRoot + "\"");
+    document.getElementsByTagName("base")[0].href = actualRoot;
+  }
+
+  window.MetabaseRoot = actualRoot;
+})();
+</script><script>(function () {
+  window.Metabase = window.Metabase || {};
+  window.Metabase.AssetErrorLoad = function (tag) {
+    console.error(
+      `Could not download asset ${tag.src} from your metabase instance. \
+This shouldn't happen normally, but can happen in certain \
+instances where your browser has cached the index.html page, or \
+there are different versions of metabase behind the same load balancer. \
+If clearing your cache doesn't resolve the issue, please ensure \
+all of your deployed instances of metabase are on the same version.`,
+    );
+  };
+})();
+</script><script defer="defer" src="app/dist/runtime.2dc815d5b6c63de4.js" onerror="Metabase.AssetErrorLoad(this)"></script><script defer="defer" src="app/dist/styles.cd4cbc9f3941e73d.js" onerror="Metabase.AssetErrorLoad(this)"></script><script defer="defer" src="app/dist/vendor.ebebb8c7d5237817.js" onerror="Metabase.AssetErrorLoad(this)"></script><script defer="defer" src="app/dist/app-main.88afcaf317fe8a33.js" onerror="Metabase.AssetErrorLoad(this)"></script><link href="app/dist/styles.e231c5df584aff0c.css" rel="stylesheet"><link href="app/dist/vendor.1c110cafd2d27013.css" rel="stylesheet"><link href="app/dist/app-main.4a9e716748649820.css" rel="stylesheet">
+<script>
+  (function() {
+    var l = window.location;
+    if (l.search.startsWith('?/')) {
+      window.history.replaceState(null, null, l.pathname + decodeURIComponent(l.search.slice(1)) + l.hash);
+    }
+  })();
+</script>
+</head><body dir="ltr" class="mb-wrapper"><div id="root"></div>
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js", { scope: "/metabase/" })
+      .then(function(reg) {
+        // If the SW just installed (first visit), reload so it intercepts API calls.
+        if (reg.installing) {
+          reg.installing.addEventListener("statechange", function(e) {
+            if (e.target.state === "activated") window.location.reload();
+          });
+        }
+      })
+      .catch(function(err) { console.error("SW registration failed:", err); });
+  }
+</script>
+</body></html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Query Builder Demo</title>
+  <script>
+    // GitHub Pages SPA fallback: encode the path in the query string and redirect to root.
+    var l = window.location;
+    l.replace(l.origin + l.pathname.split('/').slice(0, 2).join('/') + '/?/' +
+      encodeURIComponent(l.pathname.slice(l.pathname.indexOf('/', 1) + 1) + l.search + l.hash)
+    );
+  </script>
+</head>
+<body></body>
+</html>
