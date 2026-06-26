@@ -34,6 +34,43 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Create CLJS stubs (avoids full Clojure/Shadow-CLJS build)
+        run: |
+          mkdir -p target/cljs_release
+
+          # metabase.dashboards.constants
+          cat > target/cljs_release/metabase.dashboards.constants.js << 'STUB'
+          module.exports = {
+            DEFAULT_CARD_SIZE_JSON: { width: 4, height: 4 },
+            CARD_SIZE_DEFAULTS_JSON: {},
+          };
+          STUB
+
+          # metabase.xrays.domain_entities.queries.util  (unique_expression_name)
+          cat > target/cljs_release/metabase.xrays.domain_entities.queries.util.js << 'STUB'
+          module.exports = {
+            unique_expression_name: function(expressions, name) {
+              var existing = Object.keys(expressions || {});
+              if (!existing.includes(name)) return name;
+              var i = 1;
+              while (existing.includes(name + "_" + i)) i++;
+              return name + "_" + i;
+            },
+          };
+          STUB
+
+          # metabase.pivot.js  (pivot table — not needed for QB demo)
+          cat > target/cljs_release/metabase.pivot.js << 'STUB'
+          module.exports = {
+            columns_without_pivot_group: function(cols) { return cols || []; },
+            process_pivot_table: function() {
+              return { rows: [], columns: [], values: [], rowCount: 0, columnCount: 0,
+                       getRowSection: function() { return []; },
+                       rowIndexes: [], columnIndexes: [], valueIndexes: [] };
+            },
+          };
+          STUB
+
       - name: Build frontend (JS only)
         run: bun run build-release:js
         env:
