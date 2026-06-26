@@ -26,8 +26,14 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/metabase/metabase/releases/latest")
           TAG=$(echo "$RELEASE_JSON" | jq -r '.tag_name')
-          JAR_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name == "metabase.jar") | .browser_download_url')
           echo "Release tag : $TAG"
+          echo "Available assets:"
+          echo "$RELEASE_JSON" | jq -r '.assets[] | "\(.name) (\(.size) bytes)"'
+          # Try metabase.jar first, then any .jar file
+          JAR_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name == "metabase.jar") | .browser_download_url')
+          if [ -z "$JAR_URL" ]; then
+            JAR_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url' | head -1)
+          fi
           echo "Downloading : $JAR_URL"
           curl -L --progress-bar -o metabase.jar "$JAR_URL"
           ls -lh metabase.jar
