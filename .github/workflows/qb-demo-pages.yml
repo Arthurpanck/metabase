@@ -1,0 +1,58 @@
+name: Deploy Query Builder Demo to GitHub Pages
+
+on:
+  push:
+    branches:
+      - claude/nickel-query-builder-du1gi0
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build frontend (JS only)
+        run: bun run build-release:js
+        env:
+          WEBPACK_BUNDLE: production
+          NODE_ENV: production
+
+      - name: Post-process for GitHub Pages
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          PAGES_URL="https://${OWNER}.github.io/${REPO}"
+          echo "Patching build for: ${PAGES_URL}"
+          node qb-demo/post-build.js "${PAGES_URL}"
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./resources/frontend_client
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "Deploy QB demo [skip ci]"
