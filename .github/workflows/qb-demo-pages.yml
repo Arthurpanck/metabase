@@ -12,16 +12,35 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Java 21 (required for ClojureScript compilation)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Clojure CLI
+        uses: DeLaGuardo/setup-clojure@13.0
+        with:
+          cli: "1.12.3"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "1.3.14"
+
+      - name: Cache Maven dependencies (for ClojureScript build)
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-cljs-${{ hashFiles('deps.edn', 'shadow-cljs.edn') }}
+          restore-keys: |
+            m2-cljs-
 
       - name: Cache node_modules
         uses: actions/cache@v4
@@ -31,47 +50,18 @@ jobs:
           restore-keys: |
             bun-
 
-      - name: Install dependencies
+      - name: Install JS dependencies
         run: bun install --frozen-lockfile
 
-      - name: Create CLJS stubs (avoids full Clojure/Shadow-CLJS build)
-        run: |
-          mkdir -p target/cljs_release
+      - name: Prefetch Clojure dependencies
+        run: clojure -P -A:cljs
 
-          # metabase.dashboards.constants
-          cat > target/cljs_release/metabase.dashboards.constants.js << 'STUB'
-          module.exports = {
-            DEFAULT_CARD_SIZE_JSON: { width: 4, height: 4 },
-            CARD_SIZE_DEFAULTS_JSON: {},
-          };
-          STUB
+      - name: Build ClojureScript (metabase-lib + pivot + types)
+        run: bun run build-release:cljs
+        env:
+          NODE_ENV: production
 
-          # metabase.xrays.domain_entities.queries.util  (unique_expression_name)
-          cat > target/cljs_release/metabase.xrays.domain_entities.queries.util.js << 'STUB'
-          module.exports = {
-            unique_expression_name: function(expressions, name) {
-              var existing = Object.keys(expressions || {});
-              if (!existing.includes(name)) return name;
-              var i = 1;
-              while (existing.includes(name + "_" + i)) i++;
-              return name + "_" + i;
-            },
-          };
-          STUB
-
-          # metabase.pivot.js  (pivot table — not needed for QB demo)
-          cat > target/cljs_release/metabase.pivot.js << 'STUB'
-          module.exports = {
-            columns_without_pivot_group: function(cols) { return cols || []; },
-            process_pivot_table: function() {
-              return { rows: [], columns: [], values: [], rowCount: 0, columnCount: 0,
-                       getRowSection: function() { return []; },
-                       rowIndexes: [], columnIndexes: [], valueIndexes: [] };
-            },
-          };
-          STUB
-
-      - name: Build frontend (JS only)
+      - name: Build frontend JS
         run: bun run build-release:js
         env:
           WEBPACK_BUNDLE: production
